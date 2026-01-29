@@ -21,7 +21,7 @@ mkdir -p /content
 
 # Install ComfyUI
 if ! checkfolder /content/ComfyUI; then
-    git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git /content/ComfyUI 2>&1 >/dev/null
+    git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git /content/ComfyUI
     cd /content/ComfyUI
     pip install -r requirements.txt 2>&1 >/dev/null
 fi
@@ -36,7 +36,7 @@ fi
 
 # Install PM2
 if ! checkinstall pm2; then
-    npm i -g pm2
+    npm i -g pm2 2>&1 >/dev/null
 fi
 
 USERDATA_DIR=/content/drive/MyDrive/ComfyUI
@@ -63,7 +63,7 @@ cd /content/ComfyUI
 pm2 delete comfyui 2>&1 >/dev/null || true
 pm2 delete cloudflared 2>&1 >/dev/null || true
 
-pm2 start "python main.py --port 8188" --name comfyui
+pm2 start "python main.py --port 8188" --name comfyui --cwd /content/ComfyUI 2>&1 >/dev/null
 echo "Waiting for ComfyUI to start..." >&2
 COMFYUI_STARTED=false
 for i in {1..60}; do
@@ -82,7 +82,7 @@ if [ "$COMFYUI_STARTED" = false ]; then
     exit 1
 fi
 
-pm2 start "cloudflared tunnel --url http://localhost:8188 --no-autoupdate" --name cloudflared
+pm2 start "cloudflared tunnel --url http://localhost:8188 --no-autoupdate" --name cloudflared --cwd /content/ComfyUI 2>&1 >/dev/null
 echo "Waiting for cloudflared to start..." >&2
 CLOUDFLARED_URL=""
 for i in {1..60}; do
