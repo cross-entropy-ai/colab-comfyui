@@ -3,32 +3,40 @@
 set -e
 
 checkinstall() {
-  command -v $@ 2>&1 >/dev/null
+    command -v $@ 2>&1 >/dev/null
 }
 
 checkfolder() {
-  test -d $@ 2>&1 >/dev/null
+    test -d $@ 2>&1 >/dev/null
 }
 
 if ! checkfolder /content/drive/MyDrive; then
-  echo "Google Drive not mounted. Please mount Google Drive in the Colab interface." >&2
-  echo "from google.colab import drive" >&2
-  echo "drive.mount('/content/drive')" >&2
-  exit 1
+    echo "Google Drive not mounted. Please mount Google Drive in the Colab interface." >&2
+    echo "from google.colab import drive" >&2
+    echo "drive.mount('/content/drive')" >&2
+    exit 1
 fi
 
 mkdir -p /content
 
 # Install ComfyUI
 if ! checkfolder /content/ComfyUI; then
-  git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git /content/ComfyUI
-  cd /content/ComfyUI
-  pip install -r requirements.txt
+    git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git /content/ComfyUI 2>&1 >/dev/null
+    cd /content/ComfyUI
+    pip install -r requirements.txt 2>&1 >/dev/null
+fi
+
+# Install Cloudflared
+if ! checkinstall cloudflared; then
+    rm -f /tmp/cloudflared.deb
+    wget -q -O /tmp/cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb 2>&1 >/dev/null
+    DEBIAN_FRONTEND=noninteractive apt-get install -qq -y /tmp/cloudflared.deb 2>&1 >/dev/null
+    rm -f /tmp/cloudflared.deb
 fi
 
 # Install PM2
 if ! checkinstall pm2; then
-  npm i -g pm2
+    npm i -g pm2
 fi
 
 USERDATA_DIR=/content/drive/MyDrive/ComfyUI
@@ -53,16 +61,53 @@ ln -sf $USERDATA_DIR/models /content/ComfyUI/models
 
 cd /content/ComfyUI
 pm2 delete comfyui 2>&1 >/dev/null || true
-pm2 start "python main.py --port 8188" --name comfyui
+pm2 delete cloudflared 2>&1 >/dev/null || true
 
-sleep 5
+pm2 start "python main.py --port 8188" --name comfyui
+echo "Waiting for ComfyUI to start..." >&2
+COMFYUI_STARTED=false
+for i in {1..60}; do
+    sleep 1
+    if curl -s http://localhost:8188 >/dev/null 2>&1; then
+        echo "✓ ComfyUI started successfully" >&2
+        COMFYUI_STARTED=true
+        break
+    fi
+done
+
+if [ "$COMFYUI_STARTED" = false ]; then
+    echo "" >&2
+    echo "✗ Error: ComfyUI failed to start after 60 seconds" >&2
+    echo "Check logs with: pm2 logs comfyui" >&2
+    exit 1
+fi
+
+pm2 start "cloudflared tunnel --url http://localhost:8188 --no-autoupdate" --name cloudflared
+echo "Waiting for cloudflared to start..." >&2
+CLOUDFLARED_URL=""
+for i in {1..60}; do
+    sleep 1
+    CLOUDFLARED_URL=$(pm2 logs cloudflared --lines 100 --nostream 2>/dev/null | grep -oP 'https://[a-zA-Z0-9-]+\.trycloudflare\.com' | head -1)
+    if [ ! -z "$CLOUDFLARED_URL" ]; then
+        echo "✓ cloudflared started successfully" >&2
+        break
+    fi
+done
+
+if [ -z "$CLOUDFLARED_URL" ]; then
+    echo "" >&2
+    echo "✗ Error: cloudflared failed to start after 60 seconds" >&2
+    echo "Check logs with: pm2 logs cloudflared" >&2
+    exit 1
+fi
 
 echo "" >&2
-echo "================ ComfyUI ================" >&2
-echo "Comfy is running at 8188. Use following script to view ComfyUI in Colab." >&2
-echo "from google.colab import output" >&2
-echo "output.serve_kernel_port_as_iframe(8188, width='100%', height='960')" >&2
+echo "========================= ComfyUI =========================" >&2
+echo "ComfyUI is running and accessible via the following URL:" >&2
+echo "" >&2
+echo "    $CLOUDFLARED_URL" >&2
 echo "" >&2
 echo "Run 'pm2 list' to list the processes." >&2
-echo "Run 'pm2 logs comfyui --lines 1000' to see the logs." >&2
-echo "Run 'pm2 delete comfyui' to delete the process." >&2
+echo "Run 'pm2 logs comfyui --lines 1000' to see the ComfyUI logs." >&2
+echo "Run 'pm2 logs cloudflared --lines 1000' to see the cloudflared logs." >&2
+echo "Run 'pm2 delete comfyui cloudflared' to stop all processes." >&2
