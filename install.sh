@@ -12,8 +12,8 @@ checkfolder() {
 
 if ! checkfolder /content/drive/MyDrive; then
   echo "Google Drive not mounted. Please mount Google Drive in the Colab interface." >&2
-  echo "from google.colab import drive"
-  echo "drive.mount('/content/drive')"
+  echo "from google.colab import drive" >&2
+  echo "drive.mount('/content/drive')" >&2
   exit 1
 fi
 
