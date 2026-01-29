@@ -55,8 +55,14 @@ cd /content/ComfyUI
 pm2 delete comfyui 2>&1 >/dev/null || true
 pm2 start "python main.py --port 8188" --name comfyui
 
+sleep 5
+
 echo "" >&2
 echo "================ ComfyUI ================" >&2
+echo "Comfy is running at 8188. Use following script to view ComfyUI in Colab." >&2
+echo "from google.colab import output" >&2
+echo "output.serve_kernel_port_as_iframe(8188, width='100%', height='960')" >&2
+echo "" >&2
 echo "Run 'pm2 list' to list the processes." >&2
 echo "Run 'pm2 logs comfyui --lines 1000' to see the logs." >&2
 echo "Run 'pm2 delete comfyui' to delete the process." >&2
