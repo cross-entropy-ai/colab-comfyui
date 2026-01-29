@@ -2,6 +2,10 @@
 
 Run ComfyUI on Google Colab with one command.
 
+> [!NOTE]
+> ComfyUI requires GPU/CUDA instance.
+
+
 ## Installation
 
 ```python
