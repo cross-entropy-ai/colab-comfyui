@@ -60,11 +60,11 @@ rm -rf /content/ComfyUI/models
 ln -sf $USERDATA_DIR/models /content/ComfyUI/models
 
 cd /content/ComfyUI
-pm2 delete comfyui 2>&1 >/dev/null || true
-pm2 delete cloudflared 2>&1 >/dev/null || true
+pm2 delete comfyui >/dev/null 2>&1 || true
+pm2 delete cloudflared >/dev/null 2>&1 || true
 
-pm2 start "python main.py --port 8188" --name comfyui --cwd /content/ComfyUI 2>&1 >/dev/null
-echo "Waiting for ComfyUI to start..." >&2
+pm2 start "python main.py --port 8188" --name comfyui --cwd /content/ComfyUI >/dev/null 2>&1
+echo "- Waiting for ComfyUI to start..." >&2
 COMFYUI_STARTED=false
 for i in {1..60}; do
     sleep 1
@@ -82,8 +82,8 @@ if [ "$COMFYUI_STARTED" = false ]; then
     exit 1
 fi
 
-pm2 start "cloudflared tunnel --url http://localhost:8188 --no-autoupdate" --name cloudflared --cwd /content/ComfyUI 2>&1 >/dev/null
-echo "Waiting for cloudflared to start..." >&2
+pm2 start "cloudflared tunnel --url http://localhost:8188 --no-autoupdate" --name cloudflared --cwd /content/ComfyUI >/dev/null 2>&1
+echo "- Waiting for cloudflared to start..." >&2
 CLOUDFLARED_URL=""
 for i in {1..60}; do
     sleep 1
