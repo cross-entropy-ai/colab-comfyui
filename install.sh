@@ -22,6 +22,7 @@ mkdir -p /content
 # Install ComfyUI
 if ! checkfolder /content/ComfyUI; then
     git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git /content/ComfyUI
+    git clone --depth 1 https://github.com/ltdrdata/ComfyUI-Manager /content/ComfyUI/custom_nodes/comfyui-manager
     cd /content/ComfyUI
     pip install -r requirements.txt 2>&1 >/dev/null
 fi
