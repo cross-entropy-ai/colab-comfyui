@@ -87,7 +87,7 @@ fi
 
 echo "" >&2
 echo "========================= ComfyUI =========================" >&2
-echo "ComfyUI is running:" >&2
+echo "ComfyUI is running at http://localhost:8188:" >&2
 echo "" >&2
 echo "Run 'pm2 list' to list the processes." >&2
 echo "Run 'pm2 logs comfyui --lines 1000' to see the ComfyUI logs." >&2
