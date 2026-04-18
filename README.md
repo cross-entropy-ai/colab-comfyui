@@ -23,7 +23,7 @@ setInterval(()=>{
 ''')
 
 from google.colab import output
-output.serve_kernel_port_as_window(8188)
+output.serve_kernel_port_as_window(8188, skip_warning=True)
 ```
 
 After installation, you'll get a public URL to access ComfyUI.
