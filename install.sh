@@ -67,7 +67,7 @@ cd /content/ComfyUI
 pm2 delete comfyui >/dev/null 2>&1 || true
 pm2 delete cloudflared >/dev/null 2>&1 || true
 
-pm2 start "python main.py --port 8188" --name comfyui --cwd /content/ComfyUI >/dev/null 2>&1
+pm2 start "python main.py --port 8188 --listen 0.0.0.0" --name comfyui --cwd /content/ComfyUI >/dev/null 2>&1
 echo "- Waiting for ComfyUI to start..." >&2
 COMFYUI_STARTED=false
 for i in {1..60}; do
@@ -86,30 +86,9 @@ if [ "$COMFYUI_STARTED" = false ]; then
     exit 1
 fi
 
-pm2 start "cloudflared tunnel --url http://localhost:8188 --no-autoupdate" --name cloudflared --cwd /content/ComfyUI >/dev/null 2>&1
-echo "- Waiting for cloudflared to start..." >&2
-CLOUDFLARED_URL=""
-for i in {1..60}; do
-    sleep 1
-    CLOUDFLARED_URL=$(pm2 logs cloudflared --lines 100 --nostream 2>/dev/null | grep -oP 'https://[a-zA-Z0-9-]+\.trycloudflare\.com' | head -1)
-    if [ ! -z "$CLOUDFLARED_URL" ]; then
-        echo "✓ cloudflared started successfully" >&2
-        break
-    fi
-done
-
-if [ -z "$CLOUDFLARED_URL" ]; then
-    echo "" >&2
-    echo "✗ Error: cloudflared failed to start after 60 seconds" >&2
-    echo "Check logs with: pm2 logs cloudflared" >&2
-    exit 1
-fi
-
 echo "" >&2
 echo "========================= ComfyUI =========================" >&2
-echo "ComfyUI is running and accessible via the following URL:" >&2
-echo "" >&2
-echo "    $CLOUDFLARED_URL" >&2
+echo "ComfyUI is running:" >&2
 echo "" >&2
 echo "Run 'pm2 list' to list the processes." >&2
 echo "Run 'pm2 logs comfyui --lines 1000' to see the ComfyUI logs." >&2
