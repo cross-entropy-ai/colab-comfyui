@@ -35,6 +35,11 @@ if ! checkinstall cloudflared; then
     rm -f /tmp/cloudflared.deb
 fi
 
+# Install Claude Code
+if ! checkinstall claude; then
+    npm i -g @anthropic-ai/claude-code 2>&1 >/dev/null
+fi
+
 # Install PM2
 if ! checkinstall pm2; then
     npm i -g pm2 2>&1 >/dev/null
