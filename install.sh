@@ -128,7 +128,10 @@ if [ -f "$HOME/.claude.json" ] && [ ! -L "$HOME/.claude.json" ]; then
         rm -f "$HOME/.claude.json"
     fi
 fi
-touch "$USERDATA_DIR/claude.json"
+# Seed onboarding-complete config if file doesn't exist yet
+if [ ! -f "$USERDATA_DIR/claude.json" ]; then
+    echo '{"hasCompletedOnboarding":true,"theme":"dark"}' > "$USERDATA_DIR/claude.json"
+fi
 ln -sf "$USERDATA_DIR/claude.json" "$HOME/.claude.json"
 
 # ComfyUI user data (settings, saved workflows live under user/default/workflows)
