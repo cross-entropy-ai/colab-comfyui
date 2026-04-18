@@ -64,6 +64,10 @@ mkdir -p $USERDATA_DIR/output
 rm -rf /content/ComfyUI/output
 ln -sf $USERDATA_DIR/output /content/ComfyUI/output
 
+mkdir -p $USERDATA_DIR/workflows
+rm -rf /content/ComfyUI/workflows
+ln -sf $USERDATA_DIR/workflows /content/ComfyUI/workflows
+
 mkdir -p $USERDATA_DIR/models
 rm -rf /content/ComfyUI/models
 ln -sf $USERDATA_DIR/models /content/ComfyUI/models
@@ -92,7 +96,7 @@ fi
 
 echo "" >&2
 echo "========================= ComfyUI =========================" >&2
-echo "ComfyUI is running at http://localhost:8188:" >&2
+echo "ComfyUI is running at http://localhost:8188" >&2
 echo "" >&2
 echo "Run 'pm2 list' to list the processes." >&2
 echo "Run 'pm2 logs comfyui --lines 1000' to see the ComfyUI logs." >&2
