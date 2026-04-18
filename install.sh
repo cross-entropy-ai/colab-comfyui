@@ -44,6 +44,9 @@ USERDATA_DIR=/content/drive/MyDrive/ComfyUI
 mkdir -p $USERDATA_DIR
 cd $USERDATA_DIR
 
+mkdir -p $USERDATA_DIR/claude
+ln -sf $USERDATA_DIR/claude ~/.claude
+
 mkdir -p $USERDATA_DIR/user
 rm -rf /content/ComfyUI/user
 ln -sf $USERDATA_DIR/user /content/ComfyUI/user
