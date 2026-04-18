@@ -65,7 +65,6 @@ ln -sf $USERDATA_DIR/models /content/ComfyUI/models
 
 cd /content/ComfyUI
 pm2 delete comfyui >/dev/null 2>&1 || true
-pm2 delete cloudflared >/dev/null 2>&1 || true
 
 pm2 start "python main.py --port 8188 --listen 0.0.0.0" --name comfyui --cwd /content/ComfyUI >/dev/null 2>&1
 echo "- Waiting for ComfyUI to start..." >&2
@@ -92,5 +91,3 @@ echo "ComfyUI is running:" >&2
 echo "" >&2
 echo "Run 'pm2 list' to list the processes." >&2
 echo "Run 'pm2 logs comfyui --lines 1000' to see the ComfyUI logs." >&2
-echo "Run 'pm2 logs cloudflared --lines 1000' to see the cloudflared logs." >&2
-echo "Run 'pm2 delete comfyui cloudflared' to stop all processes." >&2
