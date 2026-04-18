@@ -66,6 +66,7 @@ if ! checkfolder /content/ComfyUI; then
     git clone --depth 1 https://github.com/ltdrdata/ComfyUI-Manager /content/ComfyUI/custom_nodes/comfyui-manager
     cd /content/ComfyUI
     pip install -r requirements.txt --no-deps 2>&1 >/dev/null
+    pip install trampoline 2>&1 >/dev/null
     pip install -r custom_nodes/comfyui-manager/requirements.txt 2>&1 >/dev/null
 fi
 
