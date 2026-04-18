@@ -65,9 +65,13 @@ if ! checkfolder /content/ComfyUI; then
     git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git /content/ComfyUI
     git clone --depth 1 https://github.com/ltdrdata/ComfyUI-Manager /content/ComfyUI/custom_nodes/comfyui-manager
     cd /content/ComfyUI
-    pip install -r requirements.txt --no-deps 2>&1 >/dev/null
-    pip install trampoline 2>&1 >/dev/null
+    pip install -r requirements.txt 2>&1 >/dev/null
     pip install -r custom_nodes/comfyui-manager/requirements.txt 2>&1 >/dev/null
+    # Reinstall PyTorch CUDA if pip downgraded it to CPU-only
+    if ! python -c "import torch; assert torch.cuda.is_available()" 2>/dev/null; then
+        echo "- PyTorch CUDA lost, reinstalling..." >&2
+        pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121 2>&1 >/dev/null
+    fi
 fi
 
 # ---------- Verify PyTorch CUDA works ----------
@@ -75,7 +79,6 @@ if ! python -c "import torch; assert torch.cuda.is_available()" 2>/dev/null; the
     echo "✗ Error: PyTorch cannot access CUDA." >&2
     PYTORCH_VERSION=$(python -c "import torch; print(torch.__version__)" 2>/dev/null || echo "unknown")
     echo "  PyTorch version: $PYTORCH_VERSION" >&2
-    echo "  Likely cause: torch got downgraded to CPU-only version during pip install." >&2
     echo "  Fix:" >&2
     echo "    pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121" >&2
     exit 1
